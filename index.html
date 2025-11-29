@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Menu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #d4462c;
+            --secondary-color: #f8f5f0;
+            --text-dark: #2c2c2c;
+            --text-light: #666;
+            --accent-gold: #d4a574;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--secondary-color);
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding-bottom: 80px;
+        }
+
+        .header {
+            background-image: url('assets/images/header-image.png');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 3rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1;
+        }
+        
+        .header h1,
+        .header .tagline {
+            position: relative;
+            z-index: 2;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            letter-spacing: 0.5px;
+        }
+
+        .header .tagline {
+            font-size: 0.9rem;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        .category-nav {
+            display: flex;
+            overflow-x: auto;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .category-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-btn {
+            flex-shrink: 0;
+            padding: 0.6rem 1.2rem;
+            background: var(--secondary-color);
+            border: none;
+            border-radius: 24px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .category-btn.active {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(212, 70, 44, 0.3);
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .section {
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            margin-top: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid var(--accent-gold);
+        }
+
+        .subsection-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin: 1.5rem 0 0.75rem;
+            padding-left: 0.5rem;
+            border-left: 4px solid var(--accent-gold);
+        }
+
+        .menu-item {
+            background: var(--card-bg);
+            border-radius: 16px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            overflow: hidden;
+        }
+
+        .menu-item:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }
+
+        .item-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .item-image-placeholder {
+            width: 100%;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            font-size: 3rem;
+            font-weight: 300;
+        }
+        
+        .pho-bg { background: linear-gradient(135deg, #FA8B55 0%, #E94E3D 100%); }
+        .banh-mi-bg { background: linear-gradient(135deg, #FFB75E 0%, #ED8F03 100%); }
+        .spring-roll-bg { background: linear-gradient(135deg, #90EE90 0%, #32CD32 100%); }
+        .eggroll-bg { background: linear-gradient(135deg, #FFA07A 0%, #FF6347 100%); }
+        .vermicelli-bg { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); }
+        .rice-bg { background: linear-gradient(135deg, #DEB887 0%, #D2691E 100%); }
+        .coffee-bg { background: linear-gradient(135deg, #6F4E37 0%, #3E2723 100%); }
+        .milk-tea-bg { background: linear-gradient(135deg, #D2B48C 0%, #BC8F8F 100%); }
+        .matcha-bg { background: linear-gradient(135deg, #90EE90 0%, #228B22 100%); }
+        .fruit-tea-bg { background: linear-gradient(135deg, #FF69B4 0%, #FF1493 100%); }
+        .soda-bg { background: linear-gradient(135deg, #87CEEB 0%, #4682B4 100%); }
+        .smoothie-bg { background: linear-gradient(135deg, #DDA0DD 0%, #BA55D3 100%); }
+        .wings-bg { background: linear-gradient(135deg, #FF8C00 0%, #FF4500 100%); }
+        .fries-bg { background: linear-gradient(135deg, #FFD700 0%, #DAA520 100%); }
+        .croffle-bg { background: linear-gradient(135deg, #F4A460 0%, #D2691E 100%); }
+
+        .item-content {
+            padding: 1rem;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: var(--text-dark);
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .item-code {
+            color: var(--text-light);
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .item-price {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .item-description {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            line-height: 1.5;
+            margin-top: 0.5rem;
+        }
+
+        .size-options {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .size-option {
+            flex: 1;
+            background: var(--secondary-color);
+            padding: 0.6rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .size-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .size-price {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 0.95rem;
+        }
+
+        .notice-card {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border-left: 4px solid #f39c12;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #856404;
+        }
+
+        .notice-card strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .addons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .addon-item {
+            background: var(--secondary-color);
+            padding: 0.7rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .addon-name {
+            color: var(--text-dark);
+        }
+
+        .addon-price {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .footer {
+            background: white;
+            padding: 1.5rem;
+            text-align: center;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 2rem;
+        }
+
+        .footer-text {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        .simple-item {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .flavor-options {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--secondary-color);
+        }
+
+        .flavor-options strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+
+        .flavor-options ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .flavor-options li {
+            padding: 0.25rem 0;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .flavor-options li:before {
+            content: "• ";
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🍜 Our Menu</h1>
+        <p class="tagline">Authentic Vietnamese Cuisine</p>
+    </div>
+
+    <nav class="category-nav" id="categoryNav">
+        <button class="category-btn active" data-category="food">Home</button>
+        <button class="category-btn" data-category="appetizers">Appetizers</button>
+        <button class="category-btn" data-category="drinks">Drinks & Boba</button>
+    </nav>
+
+    <div class="container">
+        <!-- FOOD SECTION -->
+        <div id="food" class="section active">
+            <h2 class="section-title">PHỞ - Vietnamese Noodle Soup</h2>
+            
+            <div class="menu-item">
+                <div class="item-image-placeholder pho-bg">🍜</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">P01</span>
+                        <span class="item-name">House Special</span>
+                    </div>
+                    <div class="item-description">All the cuts</div>
+                    <div class="size-options">
+                        <div class="size-option">
+                            <span class="size-label">Regular</span>
+                            <span class="size-price">$17.99</span>
+                        </div>
+                        <div class="size-option">
+                            <span class="size-label">Large</span>
+                            <span class="size-price">$18.99</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder pho-bg">🍜</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">P02</span>
+                        <span class="item-name">Rare Steak</span>
+                    </div>
+                    <div class="item-description">Tái</div>
+                    <div class="size-options">
+                        <div class="size-option">
+                            <span class="size-label">Regular</span>
+                            <span class="size-price">$14.99</span>
+                        </div>
+                        <div class="size-option">
+                            <span class="size-label">Large</span>
+                            <span class="size-price">$15.99</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder pho-bg">🍜</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">P03</span>
+                        <span class="item-name">Brisket</span>
+                    </div>
+                    <div class="item-description">Gầu</div>
+                    <div class="size-options">
+                        <div class="size-option">
+                            <span class="size-label">Regular</span>
+                            <span class="size-price">$15.99</span>
+                        </div>
+                        <div class="size-option">
+                            <span class="size-label">Large</span>
+                            <span class="size-price">$16.99</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder pho-bg">🍜</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">P04</span>
+                        <span class="item-name">Meatball</span>
+                    </div>
+                    <div class="item-description">Bò Viên</div>
+                    <div class="size-options">
+                        <div class="size-option">
+                            <span class="size-label">Regular</span>
+                            <span class="size-price">$15.99</span>
+                        </div>
+                        <div class="size-option">
+                            <span class="size-label">Large</span>
+                            <span class="size-price">$16.99</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder pho-bg">🍜</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">P05</span>
+                        <span class="item-name">Beef Ribs</span>
+                    </div>
+                    <div class="size-options">
+                        <div class="size-option">
+                            <span class="size-label">Regular</span>
+                            <span class="size-price">$15.99</span>
+                        </div>
+                        <div class="size-option">
+                            <span class="size-label">Large</span>
+                            <span class="size-price">$16.99</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder pho-bg">🍜</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">P06</span>
+                        <span class="item-name">Chicken Pho</span>
+                    </div>
+                    <div class="size-options">
+                        <div class="size-option">
+                            <span class="size-label">Regular</span>
+                            <span class="size-price">$14.99</span>
+                        </div>
+                        <div class="size-option">
+                            <span class="size-label">Large</span>
+                            <span class="size-price">$15.99</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">BÁNH MÌ - Vietnamese Sandwich</h2>
+            <p class="item-description" style="margin-bottom: 1rem; padding: 0 0.5rem;">
+                House-made chicken pate, mayo, cucumber, pickled daikons and carrots, jalapeño, spring onion, and cilantro
+            </p>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder banh-mi-bg">🥖</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">M01</span>
+                        <span class="item-name">Grilled Beef</span>
+                    </div>
+                    <div class="size-options">
+                        <div class="size-option">
+                            <span class="size-label">Regular (vừa)</span>
+                            <span class="size-price">$18.99</span>
+                        </div>
+                        <div class="size-option">
+                            <span class="size-label">Large (lớn)</span>
+                            <span class="size-price">$19.99</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder banh-mi-bg">🥖</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">M02</span>
+                        <span class="item-name">Grilled Pork</span>
+                    </div>
+                    <div class="size-options">
+                        <div class="size-option">
+                            <span class="size-label">Regular (vừa)</span>
+                            <span class="size-price">$15.99</span>
+                        </div>
+                        <div class="size-option">
+                            <span class="size-label">Large (lớn)</span>
+                            <span class="size-price">$16.99</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder banh-mi-bg">🥖</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">M03</span>
+                        <span class="item-name">Grilled Chicken</span>
+                    </div>
+                    <div class="size-options">
+                        <div class="size-option">
+                            <span class="size-label">Regular (vừa)</span>
+                            <span class="size-price">$15.99</span>
+                        </div>
+                        <div class="size-option">
+                            <span class="size-label">Large (lớn)</span>
+                            <span class="size-price">$16.99</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder banh-mi-bg">🥖</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">M04</span>
+                        <span class="item-name">Sunny Side Up Eggs & Cold Cuts</span>
+                    </div>
+                    <div class="size-options">
+                        <div class="size-option">
+                            <span class="size-label">Regular (vừa)</span>
+                            <span class="size-price">$15.99</span>
+                        </div>
+                        <div class="size-option">
+                            <span class="size-label">Large (lớn)</span>
+                            <span class="size-price">$16.99</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">GỎI CUỐN - Fresh Spring Rolls</h2>
+            <p class="item-description" style="margin-bottom: 1rem; padding: 0 0.5rem;">
+                Lettuce, rice wrapper, beansprouts, cucumber, house-made peanut butter sauce
+            </p>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder spring-roll-bg">🌯</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">G01</span>
+                        <span class="item-name">Shrimp Spring Rolls</span>
+                        <span class="item-price">$9.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder spring-roll-bg">🌯</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">G02</span>
+                        <span class="item-name">Tofu Spring Rolls</span>
+                        <span class="item-price">$7.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">CHẢ GIÒ - Vietnamese Eggrolls</h2>
+            
+            <div class="menu-item">
+                <div class="item-image-placeholder eggroll-bg">🥟</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">B04</span>
+                        <span class="item-name">Eggrolls Only</span>
+                        <span class="item-price">$7.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">BÚN THỊT NƯỚNG - Vermicelli Noodle Bowl</h2>
+            
+            <div class="menu-item">
+                <div class="item-image-placeholder vermicelli-bg">🍝</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">B01</span>
+                        <span class="item-name">Grilled Lemongrass Pork w/ Eggroll</span>
+                        <span class="item-price">$16.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder vermicelli-bg">🍝</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">B02</span>
+                        <span class="item-name">Grilled Lemongrass Chicken w/ Eggroll</span>
+                        <span class="item-price">$16.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder vermicelli-bg">🍝</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">B03</span>
+                        <span class="item-name">Grilled Lemongrass Beef w/ Eggroll</span>
+                        <span class="item-price">$16.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">CƠM TẤM - Rice Combo</h2>
+            
+            <div class="menu-item">
+                <div class="item-image-placeholder rice-bg">🍚</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">R01</span>
+                        <span class="item-name">Grilled Pork w/ Egg</span>
+                        <span class="item-price">$16.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder rice-bg">🍚</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">R02</span>
+                        <span class="item-name">Grilled Chicken w/ Egg</span>
+                        <span class="item-price">$15.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder rice-bg">🍚</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">R03</span>
+                        <span class="item-name">Grilled Beef Short Ribs</span>
+                        <span class="item-price">$18.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">THÊM - Extras</h2>
+            <div class="addons-grid">
+                <div class="addon-item">
+                    <span class="addon-name">Pho Noodles</span>
+                    <span class="addon-price">$3.00</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Rare Steak (Tái)</span>
+                    <span class="addon-price">$3.50</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Beef Ribs</span>
+                    <span class="addon-price">$5.00</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Meatballs</span>
+                    <span class="addon-price">$3.00</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Brisket (Gầu)</span>
+                    <span class="addon-price">$3.00</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Rice</span>
+                    <span class="addon-price">$2.50</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Egg</span>
+                    <span class="addon-price">$2.50</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Grilled Pork</span>
+                    <span class="addon-price">$3.50</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Beef Short Ribs</span>
+                    <span class="addon-price">$4.50</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- DRINKS SECTION -->
+        <div id="drinks" class="section">
+            <div class="notice-card">
+                <strong>ℹ️ Allergen Information</strong>
+                Ingredients contain allergens. Please check with any of the staff members for more information.
+            </div>
+
+            <h2 class="section-title">☕ Coffee Series</h2>
+            
+            <div class="menu-item">
+                <div class="item-image-placeholder coffee-bg">☕</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">C01</span>
+                        <span class="item-name">Sai Gon Coffee</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder coffee-bg">☕</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">C02</span>
+                        <span class="item-name">Marble Drip Coffee</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder coffee-bg">☕</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">C03</span>
+                        <span class="item-name">Salted Cheese Foam Coffee</span>
+                        <span class="item-price">$6.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder coffee-bg">☕</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">C04</span>
+                        <span class="item-name">Ube Foam Coffee</span>
+                        <span class="item-price">$6.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder coffee-bg">☕</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">C05</span>
+                        <span class="item-name">Crème Brulée Coffee</span>
+                        <span class="item-price">$6.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder coffee-bg">☕</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">C06</span>
+                        <span class="item-name">Coconut Milk Coffee</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder coffee-bg">☕</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">C07</span>
+                        <span class="item-name">Macchiato Foam Coffee</span>
+                        <span class="item-price">$6.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">🧋 Milk Tea Series</h2>
+            
+            <div class="menu-item">
+                <div class="item-image-placeholder milk-tea-bg">🧋</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">M01</span>
+                        <span class="item-name">Signature Milk Tea</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder milk-tea-bg">🧋</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">M02</span>
+                        <span class="item-name">Taro Milk Tea</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <img src="https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=800&q=80" alt="Brown Sugar Fresh Milk" class="item-image">
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">M03</span>
+                        <span class="item-name">Brown Sugar Fresh Milk</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder fruit-tea-bg">🍹</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">M04</span>
+                        <span class="item-name">Crème Brulée Thai Tea</span>
+                        <span class="item-price">$6.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder milk-tea-bg">🧋</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">M05</span>
+                        <span class="item-name">Crème Brulée Milk Tea</span>
+                        <span class="item-price">$6.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">🍵 Latte Series</h2>
+            
+            <div class="menu-item">
+                <div class="item-image-placeholder matcha-bg">🍵</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">L01</span>
+                        <span class="item-name">Strawberry Matcha Latte</span>
+                        <span class="item-price">$6.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder matcha-bg">🍵</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">L02</span>
+                        <span class="item-name">Matcha Latte w/ Ube Foam</span>
+                        <span class="item-price">$6.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder matcha-bg">🍵</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">L03</span>
+                        <span class="item-name">Matcha Latte</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">🍓 Fruit Tea Series</h2>
+            
+            <div class="menu-item">
+                <div class="item-image-placeholder fruit-tea-bg">🍹</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">F01</span>
+                        <span class="item-name">Mango Passion Fruit Tea</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder fruit-tea-bg">🍹</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">F02</span>
+                        <span class="item-name">Lychee Rainbow Tea</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder fruit-tea-bg">🍹</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">F03</span>
+                        <span class="item-name">Tropical Fruit Tea</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder fruit-tea-bg">🍹</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">F04</span>
+                        <span class="item-name">Peach Oolong Tea</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder fruit-tea-bg">🍹</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">F05</span>
+                        <span class="item-name">Passion Fruit Tea</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder fruit-tea-bg">🍹</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">F06</span>
+                        <span class="item-name">Strawberry Oolong / Jasmine Tea</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">🥤 Soda Series</h2>
+            
+            <div class="menu-item">
+                <div class="item-image-placeholder soda-bg">🥤</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">S01</span>
+                        <span class="item-name">Blueberry Soda</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder soda-bg">🥤</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">S02</span>
+                        <span class="item-name">Peach Soda</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder soda-bg">🥤</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">S03</span>
+                        <span class="item-name">Mango Strawberry Soda</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder soda-bg">🥤</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">S04</span>
+                        <span class="item-name">Blue Ocean Soda</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder soda-bg">🥤</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">S05</span>
+                        <span class="item-name">Lychee Butterfly Soda</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder soda-bg">🥤</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">S06</span>
+                        <span class="item-name">Strawberry Lemonade Soda</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">🍧 Freeze Series</h2>
+            
+            <div class="menu-item">
+                <div class="item-image-placeholder smoothie-bg">🍹</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">I01</span>
+                        <span class="item-name">Purple Oreo Smoothie</span>
+                        <span class="item-price">$6.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder smoothie-bg">🍹</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">I02</span>
+                        <span class="item-name">Purple Haze Smoothie</span>
+                        <span class="item-price">$6.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder smoothie-bg">🍹</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">I03</span>
+                        <span class="item-name">Strawberry Smoothie</span>
+                        <span class="item-price">$6.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder smoothie-bg">🍹</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-code">I04</span>
+                        <span class="item-name">Mango Smoothie</span>
+                        <span class="item-price">$6.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">🧋 Add-Ons</h2>
+            <h3 class="subsection-title">Premium Foams</h3>
+            <div class="addons-grid">
+                <div class="addon-item">
+                    <span class="addon-name">Macchiato Foam</span>
+                    <span class="addon-price">$0.85</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Ube Foam</span>
+                    <span class="addon-price">$0.85</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Strawberry Foam</span>
+                    <span class="addon-price">$0.85</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Crème Brûlée Foam</span>
+                    <span class="addon-price">$0.85</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Salted Cream Foam</span>
+                    <span class="addon-price">$0.85</span>
+                </div>
+            </div>
+
+            <h3 class="subsection-title">Toppings</h3>
+            <div class="addons-grid">
+                <div class="addon-item">
+                    <span class="addon-name">Black Boba</span>
+                    <span class="addon-price">$0.85</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Crystal Boba</span>
+                    <span class="addon-price">$0.85</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Lychee Jelly</span>
+                    <span class="addon-price">$0.85</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Taro Paste</span>
+                    <span class="addon-price">$0.85</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Mango Popping</span>
+                    <span class="addon-price">$0.85</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Strawberry Popping</span>
+                    <span class="addon-price">$0.85</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Peach Popping</span>
+                    <span class="addon-price">$0.85</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Blueberry Popping</span>
+                    <span class="addon-price">$0.85</span>
+                </div>
+                <div class="addon-item">
+                    <span class="addon-name">Lychee Popping</span>
+                    <span class="addon-price">$0.85</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- APPETIZERS SECTION -->
+        <div id="appetizers" class="section">
+            <div class="notice-card">
+                <strong>ℹ️ Allergen Information</strong>
+                Ingredients contain allergens. Please check with any of the staff members for more information.
+            </div>
+
+            <h2 class="section-title">🍗 Chicken Wings</h2>
+            
+            <div class="menu-item">
+                <div class="item-image-placeholder wings-bg">🍗</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-name">Chicken Wings</span>
+                        <span class="item-price">$11.99</span>
+                    </div>
+                    <div class="flavor-options">
+                        <strong>Choose your flavor:</strong>
+                        <ul>
+                            <li>House Special Sauce</li>
+                            <li>Garlic & Parmesan</li>
+                            <li>Mango Habanero</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">🍟 French Fries</h2>
+            
+            <div class="menu-item">
+                <div class="item-image-placeholder fries-bg">🍟</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-name">French Fries</span>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                    <div class="flavor-options">
+                        <strong>Choose your style:</strong>
+                        <ul>
+                            <li>Original</li>
+                            <li>Garlic & Parmesan</li>
+                            <li>Cheddar Cheese</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">🍿 More Appetizers</h2>
+            
+            <div class="menu-item">
+                <div class="item-image-placeholder wings-bg">🍿</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-name">Popcorn Chicken</span>
+                        <span class="item-price">$9.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">🧇 Croffles</h2>
+            
+            <div class="menu-item">
+                <div class="item-image-placeholder croffle-bg">🧇</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-name">Tiramisu Delight</span>
+                        <span class="item-price">$7.99</span>
+                    </div>
+                    <div class="item-description">Nutella Spread, Cloud Foam, Lady Finger</div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder croffle-bg">🧇</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-name">Choco Berry</span>
+                        <span class="item-price">$7.99</span>
+                    </div>
+                    <div class="item-description">Strawberry, Nutella Spread, Cloud Foam</div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder croffle-bg">🧇</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-name">Oreo Crunch</span>
+                        <span class="item-price">$7.99</span>
+                    </div>
+                    <div class="item-description">Oreo, Nutella Spread, Cloud Foam</div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder croffle-bg">🧇</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-name">Biscoff</span>
+                        <span class="item-price">$7.99</span>
+                    </div>
+                    <div class="item-description">Biscoff Spread, Cloud Foam, Biscoff Cookie</div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="item-image-placeholder croffle-bg">🧇</div>
+                <div class="item-content">
+                    <div class="item-header">
+                        <span class="item-name">Purple Cloud</span>
+                        <span class="item-price">$7.99</span>
+                    </div>
+                    <div class="item-description">Ube Paste, Cloud Foam</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="notice-card" style="text-align: left; margin-bottom: 1.5rem;">
+            <strong>⚠️ Important Notice</strong>
+            Consuming raw or undercooked meat, poultry, seafood, or eggs may increase your risk of food borne illness. Ingredients contain allergens. Please check with any of the staff members for more information.
+            <br><br>
+            <strong>Note:</strong> An 18% gratuity fee will apply to any party of 5 or more.
+        </div>
+        <div class="footer-text">
+            Thank you for dining with us! 🙏<br>
+            Enjoy your meal!
+        </div>
+    </div>
+
+    <script>
+        // Category navigation
+        const categoryButtons = document.querySelectorAll('.category-btn');
+        const sections = document.querySelectorAll('.section');
+
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const category = button.dataset.category;
+                
+                // Update active button
+                categoryButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                // Update active section
+                sections.forEach(section => section.classList.remove('active'));
+                document.getElementById(category).classList.add('active');
+                
+                // Scroll to top smoothly
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        // Add touch feedback for menu items
+        const menuItems = document.querySelectorAll('.menu-item');
+        menuItems.forEach(item => {
+            item.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.98)';
+            });
+            item.addEventListener('touchend', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
